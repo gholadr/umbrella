@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
             HttpURLConnection urlConnection = null;
             String useUmbrellaStr = "Don't know, sorry about that.";
             try {
-                URL url = new URL("http://api.openweathermap.org/data/2.5/forecast?id=1581130=json&APPID=094f42c123846d724b811a5696e25bb8");
+                URL url = new URL("http://api.wunderground.com/api/739df143b9d824c7/geolookup/forecast/q/10.811188,106.770847.json");
                 urlConnection = (HttpURLConnection) url.openConnection();
                 InputStream in = urlConnection.getInputStream();
 
@@ -106,17 +106,20 @@ public class MainActivity extends AppCompatActivity {
     protected String useUmbrella(InputStream in) {
         StringBuilder stringBuilder = new StringBuilder();
         BufferedReader bufferedReader = null;
+
         try {
             bufferedReader = new BufferedReader(new InputStreamReader(in));
             String line;
+
             while ((line = bufferedReader.readLine()) != null) {
                 stringBuilder.append(line + "\n");
             }
             //JSON needs to be parsed here
             Log.i("Returned data", stringBuilder.toString());
-            JSONObject forecastJson = new JSONObject(stringBuilder.toString());
-            JSONArray weatherArray = forecastJson.getJSONArray("list");
+            JSONObject forecastJson = new JSONObject(stringBuilder.toString()).getJSONObject("forecast").getJSONObject("simpleforecast");
+            JSONArray weatherArray = forecastJson.getJSONArray("forecastday");
             JSONObject todayWeather = weatherArray.getJSONObject(0);
+            Log.d("umbrella", todayWeather.toString());
             if(todayWeather.has("rain") == true){
                 return "rain!";
             }
@@ -124,7 +127,21 @@ public class MainActivity extends AppCompatActivity {
                 return "no rain!";
             }
         } catch (Exception e) {
-            Log.e("MainActivity", "Error", e);
+            String sb = e.toString();
+            if (sb.length() > 4000) {
+                Log.v("umbrella", "sb.length = " + sb.length());
+                int chunkCount = sb.length() / 4000;     // integer division
+                for (int i = 0; i <= chunkCount; i++) {
+                    int max = 4000 * (i + 1);
+                    if (max >= sb.length()) {
+                        Log.v("umbrella", "chunk " + i + " of " + chunkCount + ":" + sb.substring(4000 * i));
+                    } else {
+                        Log.v("umbrella", "chunk " + i + " of " + chunkCount + ":" + sb.substring(4000 * i, max));
+                    }
+                }
+            } else {
+                Log.v("umbrella", sb.toString());
+            }
         } finally {
             if (bufferedReader != null) {
                 try {
