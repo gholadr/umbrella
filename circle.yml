@@ -1,3 +1,4 @@
 test:
   override:
     - ./gradlew assembleDebug
+    - cp -r gholadr/umbrella/build/outputs $CIRCLE_ARTIFACTS
