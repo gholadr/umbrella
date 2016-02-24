@@ -1,13 +1,23 @@
 package com.thinkful.umbrella;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -15,6 +25,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -31,6 +42,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Calendar;
 
 
 public class MainActivity extends AppCompatActivity
@@ -43,9 +55,10 @@ public class MainActivity extends AppCompatActivity
         GoogleApiClient.
                 OnConnectionFailedListener,
         LocationListener {
-    protected static String TAG = "umbrella";
+    public static String TAG = "Umbrella";
     protected GoogleApiClient mGoogleApiClient;
     protected Location mCurrentLocation;
+    private int notificationID= 133;
     /**
      * Request code for location permission request.
      *
@@ -65,6 +78,22 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Button mSetAlarmButton = (Button) findViewById(R.id.button);
+        mSetAlarmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //displayNotification();
+                setAlarm();
+            }
+        });
+        Button mCancelAlarmButton = (Button) findViewById(R.id.button2);
+        mCancelAlarmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //displayNotification();
+                cancelAlarm();
+            }
+        });
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -74,8 +103,66 @@ public class MainActivity extends AppCompatActivity
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+
     }
 
+    protected void setAlarm() {
+        //get reference to AlarmManager
+        AlarmManager alarmMgr = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
+
+        //Elapsed real time non-repeating
+
+        alarmMgr.set(AlarmManager.ELAPSED_REALTIME,
+                  SystemClock.elapsedRealtime() + 10 * 1000,
+                  getMainActivityPendingIntent());
+
+
+        //Elapse real time repeating
+
+/*        alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME,
+                SystemClock.elapsedRealtime() + 10 * 1000,
+                10 * 1000, getMainActivityPendingIntent());*/
+
+/*
+        //RTC alarm repeating
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.HOUR_OF_DAY, 9);
+        calendar.set(Calendar.MINUTE, 01);
+        long milliseconds = calendar.getTimeInMillis();
+
+        alarmMgr.setInexactRepeating(AlarmManager.RTC, milliseconds,
+                AlarmManager.INTERVAL_DAY, getMainActivityPendingIntent());*/
+
+    }
+
+    protected void cancelAlarm() {
+        AlarmManager alarmMgr = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
+        alarmMgr.cancel(getMainActivityPendingIntent());
+    }
+
+    protected void displayNotification(){
+        //Build Notification
+        Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+        NotificationCompat.Builder nBuilder = new NotificationCompat.Builder(
+                this);
+        nBuilder.setContentTitle("Notification");
+        nBuilder.setContentText("This is a Notification");
+        nBuilder.setSmallIcon(R.drawable.zombie_icon_alpha);
+        nBuilder.setLargeIcon(largeIcon); //setLargeIcon(R.drawable.ic_launcher);
+
+        nBuilder.setContentIntent(getMainActivityPendingIntent());
+        nBuilder.setAutoCancel(true);
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(notificationID, nBuilder.build());
+    }
+
+    protected PendingIntent getMainActivityPendingIntent() {
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 1234, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return(pendingIntent);
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
