@@ -1,47 +1,35 @@
 package com.thinkful.umbrella;
 
 import android.Manifest;
-
 import android.content.pm.PackageManager;
 import android.location.Location;
-
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
-
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
-
-
-import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-
 import java.net.URL;
 
 
@@ -113,7 +101,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
-
     }
 
     private void initPerms() {
@@ -126,7 +113,6 @@ public class MainActivity extends AppCompatActivity
                     Manifest.permission.ACCESS_FINE_LOCATION, true);
         }
     }
-
 
 
     @Override
@@ -145,10 +131,10 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void showWeatherForCoords(){
+    public void showWeatherForCoords() {
 
         Location mCurrentLocation;
-        try{
+        try {
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         }
         catch(SecurityException e){
@@ -251,10 +237,10 @@ public class MainActivity extends AppCompatActivity
         protected String doInBackground(String... coords) {
             HttpURLConnection urlConnection = null;
             String useUmbrellaStr = "Don't know, sorry about that.";
-            String URL = String.format("http://api.wunderground.com/api/739df143b9d824c7/geolookup/forecast/q/%s.json", coords);
-            Log.d(TAG, URL);
+            String mUrl = String.format("http://api.wunderground.com/api/739df143b9d824c7/geolookup/forecast/q/%s.json", coords);
+            Log.d(TAG, mUrl);
             try {
-                URL url = new URL(URL);
+                URL url = new URL(mUrl);
                 urlConnection = (HttpURLConnection) url.openConnection();
                 InputStream in = urlConnection.getInputStream();
                 useUmbrellaStr = useUmbrella(in);
@@ -292,7 +278,7 @@ public class MainActivity extends AppCompatActivity
                 JSONObject forecastJson = new JSONObject(stringBuilder.toString()).getJSONObject("forecast").getJSONObject("simpleforecast").getJSONArray("forecastday").getJSONObject(0);
                 JSONObject locationJson = new JSONObject(stringBuilder.toString()).getJSONObject("location");
 
-                response = String.format("Weather for %s, at %s is %s", locationJson.getString("city"),forecastJson.getJSONObject("date").get("pretty"),forecastJson.getString("conditions").toLowerCase());
+                response = String.format("Weather for %s, at %s is %s", locationJson.getString("city"), forecastJson.getJSONObject("date").get("pretty"), forecastJson.getString("conditions").toLowerCase());
                 return response;
 
             } catch (Exception e) {
