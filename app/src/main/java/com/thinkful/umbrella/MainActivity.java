@@ -27,6 +27,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -44,6 +46,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Calendar;
 
+import me.pushy.sdk.Pushy;
+
 
 public class MainActivity extends AppCompatActivity
         implements
@@ -58,7 +62,7 @@ public class MainActivity extends AppCompatActivity
     public static String TAG = "Umbrella";
     protected GoogleApiClient mGoogleApiClient;
     protected Location mCurrentLocation;
-    private int notificationID= 133;
+
     /**
      * Request code for location permission request.
      *
@@ -78,23 +82,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        Button mSetAlarmButton = (Button) findViewById(R.id.button);
-        mSetAlarmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //displayNotification();
-                setAlarm();
-            }
-        });
-        Button mCancelAlarmButton = (Button) findViewById(R.id.button2);
-        mCancelAlarmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //displayNotification();
-                cancelAlarm();
-            }
-        });
-
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -103,46 +90,14 @@ public class MainActivity extends AppCompatActivity
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+        Pushy.listen(this);
+        new registerForPushNotificationsAsync().execute();
 
     }
 
-    protected void setAlarm() {
-        //get reference to AlarmManager
-        AlarmManager alarmMgr = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
-
-        //Elapsed real time non-repeating
-
-        alarmMgr.set(AlarmManager.ELAPSED_REALTIME,
-                  SystemClock.elapsedRealtime() + 10 * 1000,
-                  getMainActivityPendingIntent());
-
-
-        //Elapse real time repeating
-
-/*        alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME,
-                SystemClock.elapsedRealtime() + 10 * 1000,
-                10 * 1000, getMainActivityPendingIntent());*/
-
-/*
-        //RTC alarm repeating
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, 9);
-        calendar.set(Calendar.MINUTE, 01);
-        long milliseconds = calendar.getTimeInMillis();
-
-        alarmMgr.setInexactRepeating(AlarmManager.RTC, milliseconds,
-                AlarmManager.INTERVAL_DAY, getMainActivityPendingIntent());*/
-
-    }
-
-    protected void cancelAlarm() {
-        AlarmManager alarmMgr = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
-        alarmMgr.cancel(getMainActivityPendingIntent());
-    }
-
-    protected void displayNotification(){
+/*    protected void displayNotification(){
         //Build Notification
+        int notificationID= 133;
         Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
         NotificationCompat.Builder nBuilder = new NotificationCompat.Builder(
                 this);
@@ -156,13 +111,13 @@ public class MainActivity extends AppCompatActivity
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(notificationID, nBuilder.build());
-    }
+    }*/
 
-    protected PendingIntent getMainActivityPendingIntent() {
+/*    protected PendingIntent getMainActivityPendingIntent() {
         Intent intent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 1234, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         return(pendingIntent);
-    }
+    }*/
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -318,6 +273,54 @@ public class MainActivity extends AppCompatActivity
                     mGoogleApiClient, this);
         }
     }
+
+    private class registerForPushNotificationsAsync extends AsyncTask<Void, Void, Exception>
+    {
+        protected Exception doInBackground(Void... params)
+        {
+            try
+            {
+                // Acquire a unique registration ID for this device
+                String registrationId = Pushy.register(getApplicationContext());
+
+                // Send the registration ID to your backend server and store it for later
+                sendRegistrationIdToBackendServer(registrationId);
+            }
+            catch( Exception exc )
+            {
+                // Return exc to onPostExecute
+                return exc;
+            }
+
+            // We're good
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Exception exc)
+        {
+            // Failed?
+            if ( exc != null )
+            {
+                // Show error as toast message
+                Toast.makeText(getApplicationContext(), exc.toString(), Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            // Succeeded, do something to alert the user
+        }
+
+        // Example implementation
+        void sendRegistrationIdToBackendServer(String registrationId) throws Exception
+        {
+            // The URL to the function in your backend API that stores registration IDs
+            URL sendRegIdRequest = new URL("https://{YOUR_API_HOSTNAME}/register/device?registration_id=" + registrationId);
+
+            // Send the registration ID by executing the GET request
+            sendRegIdRequest.openConnection();
+        }
+    }
+
     private class WebServiceTask extends AsyncTask<String, Void, String> {
 
         @Override

@@ -19,26 +19,4 @@
         android:textSize="@dimen/abc_text_size_large_material"
         android:id="@+id/hello" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Set Alarm"
-        android:id="@+id/button"
-        android:layout_marginTop="165dp"
-        android:layout_below="@+id/hello"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginLeft="34dp"
-        android:layout_marginStart="34dp" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Cancel Alarm"
-        android:id="@+id/button2"
-        android:layout_alignBottom="@+id/button"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="33dp"
-        android:layout_marginEnd="33dp" />
 </RelativeLayout>
