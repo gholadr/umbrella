@@ -19,4 +19,19 @@
         android:textSize="@dimen/abc_text_size_large_material"
         android:id="@+id/hello" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="#de3232"
+        android:text="Registration ID"
+        android:layout_alignRight="@+id/hello"
+        android:layout_alignEnd="@+id/hello"
+        android:textSize="@dimen/abc_text_size_large_material"
+        android:editable="false"
+        android:textIsSelectable="true" />
+
 </RelativeLayout>

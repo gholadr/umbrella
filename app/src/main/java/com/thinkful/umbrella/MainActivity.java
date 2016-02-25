@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,6 +16,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.NotificationCompat;
@@ -45,6 +47,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Calendar;
+import java.util.Map;
 
 import me.pushy.sdk.Pushy;
 
@@ -82,6 +85,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        TextView textView = (TextView) findViewById(R.id.textView);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -92,6 +96,12 @@ public class MainActivity extends AppCompatActivity
                 .build();
         Pushy.listen(this);
         new registerForPushNotificationsAsync().execute();
+        SharedPreferences prefA = PreferenceManager.getDefaultSharedPreferences(this);
+        //Log.d(TAG, prefA.getString("pushyToken", null));
+        String registrationID = prefA.getString("pushyToken", null);
+        if (registrationID != null){
+            textView.setText(registrationID);
+        }
 
     }
 
